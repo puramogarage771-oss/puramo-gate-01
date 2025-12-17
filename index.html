@@ -8,25 +8,85 @@
 <style>
 html, body{
   margin:0; width:100%; height:100%;
-  background:#000; color:#cfd8dc;
-  font-family:Consolas, monospace;
-  display:flex; align-items:center; justify-content:center;
+  background:#000; overflow:hidden;
+  font-family:Consolas, monospace; color:#cfd8dc;
 }
+
+/* ===== マトリックス雨（背面） ===== */
+canvas{
+  position:fixed; inset:0;
+  z-index:0;
+  pointer-events:none; /* ←クリックを奪わない */
+}
+
+/* ===== ENTER ===== */
 #enter{
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  z-index:10;
   border:1px solid #aaa;
   padding:16px 36px;
-  cursor:pointer;
   letter-spacing:4px;
+  cursor:pointer;
+  background:rgba(0,0,0,.25);
 }
 #enter:hover{opacity:.85}
+
+/* ===== ステータス ===== */
+#status{
+  position:fixed; bottom:6%;
+  width:100%; text-align:center;
+  font-size:12px; letter-spacing:2px;
+  opacity:.6; z-index:10;
+}
 </style>
 </head>
 
 <body>
 
+<canvas id="matrix"></canvas>
+
 <div id="enter">▶ ENTER ◀</div>
+<div id="status">AI ADMIN CORE : STANDBY</div>
 
 <script>
+/* ===== マトリックス雨 ===== */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+addEventListener("resize", resize);
+resize();
+
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
+const fontSize = 14;
+let cols = Math.floor(canvas.width / fontSize);
+let drops = Array(cols).fill(1);
+
+function draw(){
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.font = fontSize+"px monospace";
+  for(let i=0;i<drops.length;i++){
+    const ch = chars[Math.floor(Math.random()*chars.length)];
+    // 先端だけシルバー気味、他はグリーン
+    ctx.fillStyle = Math.random() < 0.08 ? "#cfd8dc" : "#00ff88";
+    ctx.fillText(ch, i*fontSize, drops[i]*fontSize);
+
+    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975){
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+}
+setInterval(draw, 50);
+
+/* ===== 女性AI 台本 ===== */
 const scriptLines = [
   "アクセスを確認しました。",
   "ようこそ、プラモガレージ・データノードへ。",
@@ -39,33 +99,37 @@ const scriptLines = [
 
 function speakLines(lines){
   speechSynthesis.cancel();
-
-  let i = 0;
+  let i=0;
   function next(){
-    if(i >= lines.length) return;
-
+    if(i>=lines.length) return;
     const msg = new SpeechSynthesisUtterance(lines[i]);
-    msg.lang = "ja-JP";
-    msg.rate = 0.88;   // 落ち着き
-    msg.pitch = 1.15;  // 女性AI感
-    msg.volume = 1.0;
+    msg.lang="ja-JP";
+    msg.rate=0.88;   // 落ち着き
+    msg.pitch=1.15;  // 女性AI感
+    msg.volume=1.0;
 
-    // 女性音声優先（使える環境のみ）
     const voices = speechSynthesis.getVoices();
     const female = voices.find(v =>
-      v.lang === "ja-JP" && (v.name.includes("Female") || v.name.includes("女性"))
+      v.lang==="ja-JP" && (v.name.includes("Female") || v.name.includes("女性"))
     );
     if(female) msg.voice = female;
 
-    msg.onend = () => setTimeout(next, 700); // 間（AIっぽさ）
+    msg.onend = ()=> setTimeout(next, 700);
     speechSynthesis.speak(msg);
     i++;
   }
   next();
 }
 
+/* ===== ENTER クリック ===== */
 document.getElementById("enter").addEventListener("click", ()=>{
+  document.getElementById("status").textContent =
+    "AI ADMIN CORE : INITIALIZING...";
   speakLines(scriptLines);
+
+  // うっすらフェード（音声は継続）
+  document.body.style.transition="filter 1.2s";
+  document.body.style.filter="brightness(0.9)";
 });
 </script>
 
