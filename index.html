@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PURAMO GATE 01</title>
+
 <style>
-  html,body{margin:0;height:100%;background:#020404;overflow:hidden;font-family:Consolas,monospace;color:#cfd8dc}
-  #gate{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);cursor:pointer;font-size:20px;letter-spacing:6px;color:#cfd8dc;text-shadow:0 0 8px rgba(220,220,220,.6)}
-  #status{position:fixed;bottom:8%;width:100%;text-align:center;font-size:12px;letter-spacing:2px;opacity:.7}
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: Consolas, monospace;
+  color: #cfd8dc;
+}
+
+/* ENTER */
+#gate {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  font-size: 20px;
+  letter-spacing: 6px;
+  color: #cfd8dc;
+  opacity: 0.85;
+}
+
+#gate:hover {
+  opacity: 1;
+}
+
+/* ステータス */
+#status {
+  position: fixed;
+  bottom: 6%;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
 </style>
 </head>
+
 <body>
 
 <div id="gate">▶ ENTER ◀</div>
 <div id="status">AI ADMIN CORE : STANDBY</div>
 
+<!-- 音声（ダウンロードシステムと同方式） -->
+<audio id="voice" src="system_start.mp3" preload="auto"></audio>
+
 <script>
-let audioCtx;
+const gate = document.getElementById("gate");
+const audio = document.getElementById("voice");
 
-function speakAI() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+gate.addEventListener("click", () => {
+  audio.currentTime = 0;
+  audio.play();
 
-  const now = audioCtx.currentTime;
+  document.body.style.transition = "opacity 1.2s";
+  document.body.style.opacity = 0;
 
-  // 念のため：過去の鳴り残りを潰す（超重要）
-  try { audioCtx.suspend(); } catch(e) {}
-  try { audioCtx.resume(); } catch(e) {}
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-
-  // “ブーー”対策：ノコギリ→triangleに寄せてノイズ減
-  osc.type = "triangle";
-
-  // 声っぽい揺れ（短時間で終わる）
-  osc.frequency.setValueAtTime(160, now);
-  osc.frequency.linearRampToValueAtTime(210, now + 0.18);
-  osc.frequency.linearRampToValueAtTime(150, now + 0.45);
-  osc.frequency.linearRampToValueAtTime(190, now + 0.70);
-
-  // フォルマント風（帯域を絞る）
-  filter.type = "bandpass";
-  filter.frequency.setValueAtTime(1100, now);
-  filter.Q.setValueAtTime(7, now);
-
-  // ★ここが肝：完全に無音へ落とし切る（ブーー防止）
-  gain.gain.setValueAtTime(0.0, now);
-  gain.gain.linearRampToValueAtTime(0.07, now + 0.03);
-  gain.gain.linearRampToValueAtTime(0.03, now + 0.25);
-  gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.85); // ほぼゼロ
-  gain.gain.setValueAtTime(0.0, now + 0.90);                  // 0固定で終了
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start(now);
-  osc.stop(now + 0.92); // 短く終わらせる
-}
-
-document.getElementById("gate").addEventListener("click", () => {
-  document.getElementById("status").textContent = "AI ADMIN CORE : INITIALIZING...";
-  speakAI();
+  setTimeout(() => {
+    // 次のページができたらここを書き換え
+    // location.href = "next.html";
+  }, 1200);
 });
 </script>
 
