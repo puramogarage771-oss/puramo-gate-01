@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== 基本 ===== */
 html, body{
   margin:0;
   width:100%;
@@ -25,20 +26,22 @@ canvas{
   pointer-events:none;
 }
 
-/* ===== ENTER（最初から表示・演出専用） ===== */
+/* ===== ENTER（必ず表示される） ===== */
 #enter{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   z-index:10;
-  letter-spacing:6px;
+
   font-size:20px;
+  letter-spacing:6px;
   color:#cfd8dc;
-  opacity:1;                 /* 最初から表示 */
-  transition:opacity 1.2s;   /* 消える演出 */
+
+  opacity:1;              /* ← 必ず見える */
+  transition:opacity 1.2s;
   user-select:none;
-  pointer-events:none;       /* クリック不可 */
+  pointer-events:none;    /* 押せない（演出） */
 }
 
 /* ===== ステータス ===== */
@@ -57,8 +60,10 @@ canvas{
 
 <body>
 
+<!-- 背景 -->
 <canvas id="matrix"></canvas>
 
+<!-- 初期表示 -->
 <div id="enter">ENTER</div>
 <div id="status">AI ADMIN CORE : STANDBY</div>
 
@@ -70,10 +75,10 @@ const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-addEventListener("resize", resize);
+window.addEventListener("resize", resize);
 resize();
 
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
@@ -100,7 +105,7 @@ function drawMatrix(){
 setInterval(drawMatrix, 50);
 
 /* =========================
-   クールAI 台本（1回のみ）
+   クールAI 台本（1回だけ）
 ========================= */
 const scriptLines = [
   "アクセスを確認。",
@@ -112,11 +117,11 @@ const scriptLines = [
   "外部干渉、未検出。"
 ];
 
-let spoken = false;
+let hasSpoken = false;
 
 function speakOnce(lines){
-  if(spoken) return;
-  spoken = true;
+  if(hasSpoken) return;
+  hasSpoken = true;
 
   speechSynthesis.cancel();
   let i = 0;
@@ -125,9 +130,9 @@ function speakOnce(lines){
     if(i >= lines.length) return;
 
     const msg = new SpeechSynthesisUtterance(lines[i]);
-    msg.lang   = "ja-JP";
-    msg.rate   = 0.80;
-    msg.pitch  = 0.95;
+    msg.lang = "ja-JP";
+    msg.rate = 0.80;
+    msg.pitch = 0.95;
     msg.volume = 1.0;
 
     const voices = speechSynthesis.getVoices();
@@ -156,11 +161,11 @@ document.body.addEventListener("click", ()=>{
   // ENTERを消す
   document.getElementById("enter").style.opacity = 0;
 
-  // ステータス変更
+  // ステータス更新
   document.getElementById("status").textContent =
     "AI ADMIN CORE : INITIALIZING";
 
-  // AI説明（1回のみ）
+  // AI説明（1回）
   speakOnce(scriptLines);
 
   // 軽く暗転
@@ -171,7 +176,6 @@ document.body.addEventListener("click", ()=>{
 
 </body>
 </html>
-
 
 
 
