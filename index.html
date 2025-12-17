@@ -7,40 +7,50 @@
 
 <style>
 html, body{
-  margin:0; width:100%; height:100%;
-  background:#000; overflow:hidden;
-  font-family:Consolas, monospace; color:#cfd8dc;
+  margin:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family:Consolas, monospace;
+  color:#cfd8dc;
   cursor:pointer;
 }
 
 /* ===== マトリックス雨（背面） ===== */
 canvas{
-  position:fixed; inset:0;
+  position:fixed;
+  inset:0;
   z-index:0;
-  pointer-events:none; /* クリックを奪わない */
+  pointer-events:none;
 }
 
-/* ===== ENTER（演出専用・クリック不可） ===== */
+/* ===== ENTER（最初から表示・演出専用） ===== */
 #enter{
   position:fixed;
-  top:50%; left:50%;
+  top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
   z-index:10;
   letter-spacing:6px;
   font-size:20px;
   color:#cfd8dc;
-  opacity:0;                 /* 初期は非表示 */
-  transition:opacity 1.4s;   /* フェードイン */
+  opacity:1;                 /* 最初から表示 */
+  transition:opacity 1.2s;   /* 消える演出 */
   user-select:none;
-  pointer-events:none;       /* ←重要：押せない */
+  pointer-events:none;       /* クリック不可 */
 }
 
 /* ===== ステータス ===== */
 #status{
-  position:fixed; bottom:6%;
-  width:100%; text-align:center;
-  font-size:12px; letter-spacing:2px;
-  opacity:.6; z-index:10;
+  position:fixed;
+  bottom:6%;
+  width:100%;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:2px;
+  opacity:.6;
+  z-index:10;
 }
 </style>
 </head>
@@ -54,7 +64,7 @@ canvas{
 
 <script>
 /* =========================
-   マトリックス雨（クール）
+   マトリックス雨
 ========================= */
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
@@ -78,7 +88,6 @@ function drawMatrix(){
 
   for(let i=0;i<drops.length;i++){
     const ch = chars[Math.floor(Math.random()*chars.length)];
-    // 先端だけシルバー、他は暗めグリーン
     ctx.fillStyle = Math.random() < 0.07 ? "#cfd8dc" : "#00aa66";
     ctx.fillText(ch, i*fontSize, drops[i]*fontSize);
 
@@ -91,7 +100,7 @@ function drawMatrix(){
 setInterval(drawMatrix, 50);
 
 /* =========================
-   クールAI 台本
+   クールAI 台本（1回のみ）
 ========================= */
 const scriptLines = [
   "アクセスを確認。",
@@ -103,7 +112,12 @@ const scriptLines = [
   "外部干渉、未検出。"
 ];
 
-function speakLines(lines){
+let spoken = false;
+
+function speakOnce(lines){
+  if(spoken) return;
+  spoken = true;
+
   speechSynthesis.cancel();
   let i = 0;
 
@@ -112,8 +126,8 @@ function speakLines(lines){
 
     const msg = new SpeechSynthesisUtterance(lines[i]);
     msg.lang   = "ja-JP";
-    msg.rate   = 0.80; // クール
-    msg.pitch  = 0.95; // 低め
+    msg.rate   = 0.80;
+    msg.pitch  = 0.95;
     msg.volume = 1.0;
 
     const voices = speechSynthesis.getVoices();
@@ -131,38 +145,33 @@ function speakLines(lines){
 }
 
 /* =========================
-   クリック進行（bodyのみ）
+   クリック処理（1回のみ）
 ========================= */
-let stage = 0;
-// 0: 初期（雨のみ）
-// 1: ENTER表示（READY）
-// 2: AI起動中
+let activated = false;
 
 document.body.addEventListener("click", ()=>{
-  if(stage === 0){
-    // 1回目：演出としてENTERを表示
-    document.getElementById("enter").style.opacity = 1;
-    document.getElementById("status").textContent =
-      "AI ADMIN CORE : READY";
-    stage = 1;
-    return;
-  }
+  if(activated) return;
+  activated = true;
 
-  if(stage === 1){
-    // 2回目：AI起動
-    document.getElementById("status").textContent =
-      "AI ADMIN CORE : INITIALIZING";
-    speakLines(scriptLines);
+  // ENTERを消す
+  document.getElementById("enter").style.opacity = 0;
 
-    document.body.style.transition = "filter 1.2s";
-    document.body.style.filter = "brightness(0.85)";
-    stage = 2;
-  }
+  // ステータス変更
+  document.getElementById("status").textContent =
+    "AI ADMIN CORE : INITIALIZING";
+
+  // AI説明（1回のみ）
+  speakOnce(scriptLines);
+
+  // 軽く暗転
+  document.body.style.transition = "filter 1.2s";
+  document.body.style.filter = "brightness(0.85)";
 });
 </script>
 
 </body>
 </html>
+
 
 
 
