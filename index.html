@@ -7,49 +7,40 @@
 
 <style>
 html, body{
-  margin:0;
-  width:100%;
-  height:100%;
-  background:#000;
-  overflow:hidden;
-  font-family:Consolas, monospace;
-  color:#cfd8dc;
+  margin:0; width:100%; height:100%;
+  background:#000; overflow:hidden;
+  font-family:Consolas, monospace; color:#cfd8dc;
   cursor:pointer;
 }
 
 /* ===== マトリックス雨（背面） ===== */
 canvas{
-  position:fixed;
-  inset:0;
+  position:fixed; inset:0;
   z-index:0;
-  pointer-events:none;
+  pointer-events:none; /* クリックを奪わない */
 }
 
-/* ===== ENTER（枠なし） ===== */
+/* ===== ENTER（演出専用・クリック不可） ===== */
 #enter{
   position:fixed;
-  top:50%;
-  left:50%;
+  top:50%; left:50%;
   transform:translate(-50%,-50%);
   z-index:10;
   letter-spacing:6px;
   font-size:20px;
   color:#cfd8dc;
-  opacity:0;                 /* ←最初は非表示 */
+  opacity:0;                 /* 初期は非表示 */
   transition:opacity 1.4s;   /* フェードイン */
   user-select:none;
+  pointer-events:none;       /* ←重要：押せない */
 }
 
 /* ===== ステータス ===== */
 #status{
-  position:fixed;
-  bottom:6%;
-  width:100%;
-  text-align:center;
-  font-size:12px;
-  letter-spacing:2px;
-  opacity:0.6;
-  z-index:10;
+  position:fixed; bottom:6%;
+  width:100%; text-align:center;
+  font-size:12px; letter-spacing:2px;
+  opacity:.6; z-index:10;
 }
 </style>
 </head>
@@ -63,7 +54,7 @@ canvas{
 
 <script>
 /* =========================
-   マトリックス雨
+   マトリックス雨（クール）
 ========================= */
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
@@ -87,6 +78,7 @@ function drawMatrix(){
 
   for(let i=0;i<drops.length;i++){
     const ch = chars[Math.floor(Math.random()*chars.length)];
+    // 先端だけシルバー、他は暗めグリーン
     ctx.fillStyle = Math.random() < 0.07 ? "#cfd8dc" : "#00aa66";
     ctx.fillText(ch, i*fontSize, drops[i]*fontSize);
 
@@ -117,15 +109,16 @@ function speakLines(lines){
 
   function next(){
     if(i >= lines.length) return;
+
     const msg = new SpeechSynthesisUtterance(lines[i]);
-    msg.lang="ja-JP";
-    msg.rate=0.80;
-    msg.pitch=0.95;
-    msg.volume=1.0;
+    msg.lang   = "ja-JP";
+    msg.rate   = 0.80; // クール
+    msg.pitch  = 0.95; // 低め
+    msg.volume = 1.0;
 
     const voices = speechSynthesis.getVoices();
     const female = voices.find(v =>
-      v.lang==="ja-JP" &&
+      v.lang === "ja-JP" &&
       (v.name.includes("Female") || v.name.includes("女性"))
     );
     if(female) msg.voice = female;
@@ -138,20 +131,25 @@ function speakLines(lines){
 }
 
 /* =========================
-   クリック制御
+   クリック進行（bodyのみ）
 ========================= */
-let stage = 0; // 0:未表示 / 1:ENTER表示 / 2:起動中
+let stage = 0;
+// 0: 初期（雨のみ）
+// 1: ENTER表示（READY）
+// 2: AI起動中
 
 document.body.addEventListener("click", ()=>{
   if(stage === 0){
-    // 1回目クリック：ENTER表示
+    // 1回目：演出としてENTERを表示
     document.getElementById("enter").style.opacity = 1;
+    document.getElementById("status").textContent =
+      "AI ADMIN CORE : READY";
     stage = 1;
     return;
   }
 
   if(stage === 1){
-    // 2回目クリック：AI起動
+    // 2回目：AI起動
     document.getElementById("status").textContent =
       "AI ADMIN CORE : INITIALIZING";
     speakLines(scriptLines);
