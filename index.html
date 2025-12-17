@@ -6,118 +6,138 @@
 <title>PURAMO GATE 01</title>
 
 <style>
-html, body{
-  margin:0; padding:0; width:100%; height:100%;
-  background:#020404; overflow:hidden;
-  font-family:Consolas,"Courier New",monospace;
-  color:#cfd6db;
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #020404;
+  overflow: hidden;
+  font-family: Consolas, "Courier New", monospace;
+  color: #00ffcc;
 }
 
 /* canvas */
-canvas{ position:fixed; inset:0; z-index:0; }
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
 
-/* ENTER（シルバー同化） */
-#gate{
-  position:fixed; top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  z-index:2; cursor:pointer; user-select:none;
+/* ENTER（既存そのまま） */
+#gate {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  cursor: pointer;
+  mix-blend-mode: screen;
 }
-#gate span{
-  font-size:22px; letter-spacing:6px;
-  color:#dfe6ea; opacity:.65;
-  animation:pulse 3s infinite;
+#gate span {
+  font-size: 22px;
+  letter-spacing: 6px;
+  color: #00ffcc;
+  opacity: 0.85;
   text-shadow:
-    0 0 6px rgba(220,235,245,.25),
-    0 0 14px rgba(220,235,245,.18);
+    0 0 6px rgba(0,255,204,0.6),
+    0 0 14px rgba(0,255,204,0.4),
+    0 0 28px rgba(0,255,204,0.2);
 }
-@keyframes pulse{0%{opacity:.35}50%{opacity:.85}100%{opacity:.35}}
 
 /* status */
-#status{
-  position:fixed; bottom:6%; left:0; right:0;
-  text-align:center; font-size:12px; letter-spacing:2px;
-  opacity:.6; z-index:2; color:#bfc7cc;
-}
-
-/* mobile */
-@media(max-width:768px){
-  #gate span{ font-size:18px; letter-spacing:4px; }
+#status {
+  position: fixed;
+  bottom: 6%;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.7;
+  z-index: 2;
 }
 </style>
 </head>
 
 <body>
+
 <canvas id="matrix"></canvas>
 
 <div id="gate" onclick="enterGate()">
   <span>ENTER</span>
 </div>
 
-<div id="status">AI ADMIN CORE : STANDBY MODE</div>
+<div id="status">
+  AI ADMIN CORE : GATE INITIALIZING...
+</div>
 
 <script>
 /* ===== Matrix rain（先端のみシルバー） ===== */
-const canvas=document.getElementById("matrix");
-const ctx=canvas.getContext("2d");
-function resize(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
 }
-window.addEventListener("resize",resize); resize();
+window.addEventListener("resize", resize);
 
-const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
-const fontSize=14;
-let columns=Math.floor(canvas.width/fontSize);
-let drops=Array(columns).fill(1);
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
+const fontSize = 14;
+let columns = 0;
+let drops = [];
+resize();
 
-function drawMatrix(){
-  ctx.fillStyle="rgba(2,4,4,.12)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.font=fontSize+"px monospace";
+function drawMatrix() {
+  ctx.fillStyle = "rgba(2,4,4,0.12)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = fontSize + "px monospace";
 
-  for(let i=0;i<drops.length;i++){
-    const ch=chars[(Math.random()*chars.length)|0];
-    const x=i*fontSize;
-    const y=drops[i]*fontSize;
+  for (let i = 0; i < drops.length; i++) {
+    const x = i * fontSize;
+    const y = drops[i] * fontSize;
 
-    /* 本体：落ち着いたグリーン */
-    ctx.shadowBlur=0;
-    ctx.fillStyle="rgba(0,255,136,.45)";
-    ctx.fillText(ch,x,y);
+    // 本体（グリーン）
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(0,255,136,0.45)";
+    ctx.fillText(chars[Math.random() * chars.length | 0], x, y);
 
-    /* 先端：ランダムでシルバー発光 */
-    if(Math.random()>0.985){
-      ctx.fillStyle="#f5f7f8";
-      ctx.shadowColor="rgba(230,245,255,.9)";
-      ctx.shadowBlur=20;
-      ctx.fillText(ch,x,y-fontSize);
+    // 先端（シルバー・ランダム）
+    if (Math.random() > 0.985) {
+      ctx.fillStyle = "#f5f7f8";
+      ctx.shadowColor = "rgba(230,245,255,0.9)";
+      ctx.shadowBlur = 20;
+      ctx.fillText(chars[Math.random() * chars.length | 0], x, y - fontSize);
     }
 
-    if(y>canvas.height && Math.random()>0.975){ drops[i]=0; }
+    if (y > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
     drops[i]++;
   }
 }
-setInterval(drawMatrix,50);
+setInterval(drawMatrix, 50);
 
 /* ===== AIアシスタント音声 ===== */
-const aiVoice=new Audio("ai_assistant.mp3");
-aiVoice.volume=.18; aiVoice.preload="auto";
+const aiVoice = new Audio("ai_assistant.mp3");
+aiVoice.volume = 0.18;
+aiVoice.preload = "auto";
 
-/* 自動再生（制限対策） */
-window.addEventListener("load",()=>{
-  setTimeout(()=>{ aiVoice.play().catch(()=>{}); },2200);
+// 自動再生（失敗してもOK）
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    aiVoice.play().catch(() => {});
+  }, 2000);
 });
 
-/* ENTER */
-function enterGate(){
-  aiVoice.volume=.45;
-  aiVoice.play();
-  document.getElementById("status").innerText=
-    "ACCESS GRANTED : SYNCHRONIZING CORE...";
-  document.body.style.transition="opacity 1.4s";
-  document.body.style.opacity=0;
-  setTimeout(()=>{/* next page */},1500);
+// ENTER時は確実に再生
+function enterGate() {
+  aiVoice.volume = 0.45;
+  aiVoice.play().catch(() => {});
 }
 </script>
+
 </body>
 </html>
