@@ -2,35 +2,23 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>AI VOICE CLICK TEST</title>
+<title>PURAMO GATE 01</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Consolas, monospace;
+html, body{
+  margin:0; width:100%; height:100%;
+  background:#000; color:#cfd8dc;
+  font-family:Consolas, monospace;
+  display:flex; align-items:center; justify-content:center;
 }
-
-/* クリック対象 */
-#enter {
-  color: #ccc;
-  border: 1px solid #777;
-  padding: 16px 36px;
-  cursor: pointer;
-  letter-spacing: 4px;
-  z-index: 10;
+#enter{
+  border:1px solid #aaa;
+  padding:16px 36px;
+  cursor:pointer;
+  letter-spacing:4px;
 }
-
-#enter:hover {
-  color: #fff;
-  border-color: #fff;
-}
+#enter:hover{opacity:.85}
 </style>
 </head>
 
@@ -39,24 +27,50 @@ html, body {
 <div id="enter">▶ ENTER ◀</div>
 
 <script>
-const enter = document.getElementById("enter");
+const scriptLines = [
+  "アクセスを確認しました。",
+  "ようこそ、プラモガレージ・データノードへ。",
+  "私は、管理AI、ADMIN CORE。",
+  "あなたのアクセスを一時的に許可します。",
+  "現在、システムは初期化フェーズに移行中。",
+  "データ整合性、問題なし。",
+  "外部干渉、検出されていません。"
+];
 
-enter.addEventListener("click", () => {
-  console.log("CLICK OK"); // ← デバッグ用
-
-  const msg = new SpeechSynthesisUtterance();
-  msg.text = "アクセスを確認しました。システムを起動します。";
-  msg.lang = "ja-JP";
-  msg.rate = 0.95;
-  msg.pitch = 1.2;
-  msg.volume = 1.0;
-
+function speakLines(lines){
   speechSynthesis.cancel();
-  speechSynthesis.speak(msg);
+
+  let i = 0;
+  function next(){
+    if(i >= lines.length) return;
+
+    const msg = new SpeechSynthesisUtterance(lines[i]);
+    msg.lang = "ja-JP";
+    msg.rate = 0.88;   // 落ち着き
+    msg.pitch = 1.15;  // 女性AI感
+    msg.volume = 1.0;
+
+    // 女性音声優先（使える環境のみ）
+    const voices = speechSynthesis.getVoices();
+    const female = voices.find(v =>
+      v.lang === "ja-JP" && (v.name.includes("Female") || v.name.includes("女性"))
+    );
+    if(female) msg.voice = female;
+
+    msg.onend = () => setTimeout(next, 700); // 間（AIっぽさ）
+    speechSynthesis.speak(msg);
+    i++;
+  }
+  next();
+}
+
+document.getElementById("enter").addEventListener("click", ()=>{
+  speakLines(scriptLines);
 });
 </script>
 
 </body>
 </html>
+
 
 
