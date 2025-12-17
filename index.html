@@ -146,7 +146,22 @@ function enterGate() {
     alert("ACCESS GRANTED");
   }, 1200);
 }
-</script>
+</script/* ===== AI 自動音声 ===== */
+const aiVoice = new Audio("ai_intro.mp3");
+aiVoice.volume = 0.15; // 小さめ（重要）
+aiVoice.preload = "auto";
+
+function startAIVoice() {
+  aiVoice.play().catch(() => {
+    console.log("Auto play blocked. Waiting for user interaction.");
+  });
+}
+
+// ページ起動後 少し待って再生
+window.addEventListener("load", () => {
+  setTimeout(startAIVoice, 2200);
+});
+>
 
 </body>
 </html>
