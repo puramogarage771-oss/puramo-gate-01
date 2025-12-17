@@ -1,22 +1,137 @@
-<script>
-const aiVoice = new Audio("ai_assistant.mp3");
-aiVoice.preload = "auto";
-aiVoice.volume = 0.4;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURAMO GATE 01</title>
 
-/* ページ起動時：試すだけ（失敗してもOK） */
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    aiVoice.play().catch(() => {
-      console.log("autoplay blocked");
-    });
-  }, 2000);
+<style>
+html, body{
+  margin:0; padding:0; width:100%; height:100%;
+  background:#020404; overflow:hidden;
+  font-family:Consolas,"Courier New",monospace;
+  color:#cfd6db;
+}
+
+/* canvas（クリック透過が最重要） */
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none; /* ← これが無いとENTER押せない */
+}
+
+/* ENTER */
+#gate{
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  z-index:2;
+  cursor:pointer;
+  user-select:none;
+}
+#gate span{
+  font-size:22px;
+  letter-spacing:6px;
+  color:#dfe6ea;
+  opacity:.65;
+  animation:pulse 3s infinite;
+  text-shadow:
+    0 0 6px rgba(220,235,245,.25),
+    0 0 14px rgba(220,235,245,.18);
+}
+@keyframes pulse{0%{opacity:.35}50%{opacity:.85}100%{opacity:.35}}
+
+#status{
+  position:fixed;
+  bottom:6%;
+  width:100%;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:2px;
+  opacity:.6;
+  z-index:2;
+}
+
+@media(max-width:768px){
+  #gate span{font-size:18px;letter-spacing:4px;}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="gate" onclick="enterGate()">
+  <span>ENTER</span>
+</div>
+
+<div id="status">AI ADMIN CORE : STANDBY MODE</div>
+
+<script>
+/* ===== Matrix rain（先端のみシルバー） ===== */
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  columns=Math.floor(canvas.width/fontSize);
+  drops=Array(columns).fill(1);
+}
+window.addEventListener("resize",resize);
+
+const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
+const fontSize=14;
+let columns=0;
+let drops=[];
+resize();
+
+function drawMatrix(){
+  ctx.fillStyle="rgba(2,4,4,.12)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.font=fontSize+"px monospace";
+
+  for(let i=0;i<drops.length;i++){
+    const x=i*fontSize;
+    const y=drops[i]*fontSize;
+
+    // 本体（グリーン）
+    ctx.shadowBlur=0;
+    ctx.fillStyle="rgba(0,255,136,.45)";
+    ctx.fillText(chars[Math.random()*chars.length|0],x,y);
+
+    // 先端（シルバー）
+    if(Math.random()>0.985){
+      ctx.fillStyle="#f5f7f8";
+      ctx.shadowColor="rgba(230,245,255,.9)";
+      ctx.shadowBlur=20;
+      ctx.fillText(chars[Math.random()*chars.length|0],x,y-fontSize);
+    }
+
+    if(y>canvas.height && Math.random()>0.975){drops[i]=0;}
+    drops[i]++;
+  }
+}
+setInterval(drawMatrix,50);
+
+/* ===== AI音声 ===== */
+const aiVoice=new Audio("ai_assistant.mp3");
+aiVoice.volume=.4;
+aiVoice.preload="auto";
+
+window.addEventListener("load",()=>{
+  setTimeout(()=>{ aiVoice.play().catch(()=>{}); },2000);
 });
 
-/* ENTERを押したら必ず鳴る */
-function enterGate() {
-  aiVoice.currentTime = 0;
-  aiVoice.play().catch(err => {
-    console.log("play failed", err);
-  });
+function enterGate(){
+  aiVoice.currentTime=0;
+  aiVoice.play().catch(()=>{});
+  document.getElementById("status").innerText=
+    "ACCESS GRANTED : SYNCHRONIZING CORE...";
 }
 </script>
+
+</body>
+</html>
