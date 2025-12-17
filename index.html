@@ -1,59 +1,44 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURAMO GATE 01</title>
+<script>
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
 
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: #020404;
-  overflow: hidden;
-  font-family: Consolas, "Courier New", monospace;
-  color: #00ff88;
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
+const fontSize = 14;
+let columns = 0;
+let drops = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
 }
 
-/* ===== マトリックス雨 ===== */
-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
+window.addEventListener("resize", resize);
+resize();
 
-/* ===== ENTER（完全同化） ===== */
-#gate {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  cursor: pointer;
-  user-select: none;
-}
+function drawMatrix() {
+  ctx.fillStyle = "rgba(2,4,4,0.08)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-#gate span {
-  font-size: 22px;
-  letter-spacing: 6px;
-  opacity: 0.75;
-  color: #00ff88;
-  animation: pulse 2.8s infinite;
-}
+  ctx.fillStyle = "#00ff88";
+  ctx.font = fontSize + "px monospace";
 
-/* 発光を「点」にする（枠感ゼロ） */
-@keyframes pulse {
-  0% {
-    opacity: 0.35;
-    text-shadow: 0 0 4px rgba(0,255,136,0.15);
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
   }
-  50% {
-    opacity: 0.85;
-    text-shadow:
-      0 0 6px rgba(0,255,136,0.4),
-      0 0 12px rgba(0,255,136,0.25);
-  }
-  100% {
-    opacity: 0.35
+}
+
+setInterval(drawMatrix, 50);
+
+function enterGate() {
+  document.body.style.transition = "opacity 1.2s";
+  document.body.style.opacity = 0;
+}
+</script>
