@@ -3,113 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURAMO GATE 01 - AUDIO TEST</title>
+<title>PURAMO AUDIO TEST</title>
 
 <style>
 html, body{
-  margin:0; padding:0; width:100%; height:100%;
-  background:#020404; overflow:hidden;
-  font-family:Consolas,"Courier New",monospace;
-  color:#cfd6db;
-}
-
-canvas{
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-}
-
-#gate{
-  position:fixed;
-  top:45%; left:50%;
-  transform:translate(-50%,-50%);
-  z-index:2;
-  cursor:pointer;
-  font-size:22px;
-  letter-spacing:6px;
-  color:#dfe6ea;
-  text-shadow:0 0 8px rgba(220,235,245,.4);
-}
-
-#test{
-  position:fixed;
-  top:55%; left:50%;
-  transform:translate(-50%,-50%);
-  z-index:2;
-  cursor:pointer;
-  font-size:14px;
-  opacity:.7;
-}
-
-#status{
-  position:fixed;
-  bottom:6%;
+  margin:0;
+  padding:0;
   width:100%;
+  height:100%;
+  background:#000;
+  color:#00ffcc;
+  font-family:Consolas,"Courier New",monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#panel{
   text-align:center;
+}
+
+.button{
+  margin:20px 0;
+  padding:12px 28px;
+  border:1px solid #00ffcc;
+  cursor:pointer;
+  letter-spacing:3px;
+  user-select:none;
+}
+
+.status{
   font-size:12px;
-  letter-spacing:2px;
-  opacity:.6;
-  z-index:2;
+  opacity:0.7;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="matrix"></canvas>
-
-<div id="gate">ENTER</div>
-<div id="test">▶ DOWNLOAD SYSTEM TEST</div>
-
-<div id="status">AUDIO TEST MODE</div>
+<div id="panel">
+  <div class="button" id="playBtn">▶ CLICK TO PLAY SOUND</div>
+  <div class="status" id="status">WAITING</div>
+</div>
 
 <script>
-/* ===== Matrix rain（軽量） ===== */
-const canvas=document.getElementById("matrix");
-const ctx=canvas.getContext("2d");
-function resize(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-}
-window.addEventListener("resize",resize); resize();
-
-const chars="01";
-const fontSize=14;
-let columns=Math.floor(canvas.width/fontSize);
-let drops=Array(columns).fill(1);
-
-function draw(){
-  ctx.fillStyle="rgba(0,0,0,.1)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="#00ff88";
-  ctx.font=fontSize+"px monospace";
-  for(let i=0;i<drops.length;i++){
-    ctx.fillText(chars[Math.random()*2|0], i*fontSize, drops[i]*fontSize);
-    drops[i]++;
-    if(drops[i]*fontSize>canvas.height && Math.random()>0.98) drops[i]=0;
-  }
-}
-setInterval(draw,50);
-
-/* ===== 音声（ダウンロードシステムと同じ） ===== */
+/* ===== 音声テスト ===== */
 const audio = new Audio("download_start.mp3");
-audio.preload="auto";
-audio.volume=0.6;
+audio.preload = "auto";
+audio.volume = 0.6;
 
-/* テスト再生（これが鳴れば100%OK） */
-document.getElementById("test").onclick = ()=>{
-  audio.currentTime=0;
-  audio.play().catch(e=>console.log(e));
-  document.getElementById("status").innerText="DOWNLOAD SYSTEM SOUND PLAYING";
-};
-
-/* ENTER（暗転しない） */
-document.getElementById("gate").onclick = ()=>{
-  audio.currentTime=0;
-  audio.play().catch(e=>console.log(e));
-  document.getElementById("status").innerText="ENTER CLICKED - AUDIO TEST";
-};
+document.getElementById("playBtn").addEventListener("click", () => {
+  audio.currentTime = 0;
+  audio.play()
+    .then(() => {
+      document.getElementById("status").innerText = "PLAYING";
+    })
+    .catch(err => {
+      document.getElementById("status").innerText = "PLAY FAILED";
+      console.log(err);
+    });
+});
 </script>
 
 </body>
