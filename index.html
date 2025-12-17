@@ -1,1 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURAMO GATE 01</title>
 
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #020404;
+  overflow: hidden;
+  font-family: "Consolas", "Courier New", monospace;
+  color: #00ffcc;
+}
+
+/* ===== マトリックス雨 ===== */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* ===== 中央ゲート ===== */
+.gate {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enter {
+  border: 2px solid #00ffcc;
+  padding: 22px 60px;
+  font-size: 26px;
+  letter-spacing: 4px;
+  cursor: pointer;
+  text-shadow: 0 0 8px #00ffcc;
+  animation: pulse 2s infinite;
+}
+
+/* ===== スマホ用 ===== */
+@media (max-width: 768px) {
+  .enter {
+    padding: 14px 28px;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+}
+
+/* ===== 点滅 ===== */
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* ===== 下部メッセージ ===== */
+.message {
+  position: absolute;
+  bottom: 12%;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="gate">
+  <div class="enter" onclick="enterGate()">
+    ▶ ENTER ◀
+  </div>
+</div>
+
+<div class="message">
+  AI ADMIN CORE : GATE INITIALIZING...
+</div>
+
+<!-- 音声（ここにMP3を置く） -->
+<audio id="voice" src="voice.mp3"></audio>
+
+<script>
+/* ===== マトリックス雨 ===== */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+const drops = [];
+
+for (let x = 0; x < columns; x++) {
+  drops[x] = Math.random() * canvas.height;
+}
+
+function drawMatrix() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#00ff66";
+  ctx.font = fontSize + "px monospace";
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+}
+
+setInterval(drawMatrix, 50);
+
+/* ===== ENTER 処理 ===== */
+function enterGate() {
+  const audio = document.getElementById("voice");
+  audio.play();
+
+  document.querySelector(".enter").innerText = "ACCESS GRANTED";
+  document.querySelector(".message").innerText =
+    "AUTHORIZED : ENTERING DOWNLOAD ROOM...";
+  
+  setTimeout(() => {
+    // 次のページがあればここにURLを書く
+    // location.href = "next.html";
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
