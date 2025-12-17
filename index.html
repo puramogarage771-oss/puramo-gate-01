@@ -25,7 +25,7 @@ canvas{
   pointer-events:none;
 }
 
-/* ===== ENTER（最初から表示） ===== */
+/* ===== ENTER（最初から表示・演出用） ===== */
 #enter{
   position:fixed;
   top:50%;
@@ -49,7 +49,7 @@ canvas{
   text-align:center;
   font-size:12px;
   letter-spacing:2px;
-  opacity:.6;
+  opacity:0.6;
   z-index:10;
 }
 </style>
@@ -63,15 +63,17 @@ canvas{
 <div id="status">AI ADMIN CORE : STANDBY</div>
 
 <script>
-/* ===== マトリックス雨 ===== */
+/* =========================
+   マトリックス雨
+========================= */
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-addEventListener("resize", resize);
+window.addEventListener("resize", resize);
 resize();
 
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
@@ -97,15 +99,20 @@ function drawMatrix(){
 }
 setInterval(drawMatrix, 50);
 
-/* ===== 正規台本（最初に決めた文章） ===== */
-const scriptLines = [
+/* =========================
+   詩的強化・正規台本
+========================= */
+const baseLines = [
   "アクセスを確認しました。",
   "ようこそ、プラモガレージ・データノードへ。",
   "私は、管理AI、ADMIN CORE。",
-  "あなたのアクセスを一時的に許可します。",
+  "この空間は、静かに管理されています。",
+  "あなたのアクセスを、一時的に許可します。",
   "現在、システムは初期化フェーズに移行中。",
-  "データ整合性、問題なし。",
-  "外部干渉、検出されていません。"
+  "データは整合性を保ち、問題は検出されていません。",
+  "外部からの干渉も、確認されていません。",
+  "どうぞ、安心して先へ。",
+  "五秒後に、プラモガレージのトップページへ転送します。"
 ];
 
 let spoken = false;
@@ -118,12 +125,18 @@ function speakOnce(lines){
   let i = 0;
 
   function next(){
-    if(i >= lines.length) return;
+    if(i >= lines.length){
+      // ★ 最後のセリフ終了後、5秒待って転送
+      setTimeout(() => {
+        window.location.href = "https://www.puramogarage.com/";
+      }, 5000);
+      return;
+    }
 
     const msg = new SpeechSynthesisUtterance(lines[i]);
     msg.lang   = "ja-JP";
-    msg.rate   = 0.88;  // 元の自然寄り
-    msg.pitch  = 1.10;  // 女性AI感
+    msg.rate   = 0.88;   // 落ち着き
+    msg.pitch  = 1.10;   // 女性AI感
     msg.volume = 1.0;
 
     const voices = speechSynthesis.getVoices();
@@ -137,22 +150,30 @@ function speakOnce(lines){
     speechSynthesis.speak(msg);
     i++;
   }
+
   next();
 }
 
-/* ===== 1回クリックで実行 ===== */
+/* =========================
+   クリック（1回のみ）
+========================= */
 let activated = false;
 
 document.body.addEventListener("click", ()=>{
   if(activated) return;
   activated = true;
 
+  // ENTERを消す
   document.getElementById("enter").style.opacity = 0;
+
+  // ステータス更新
   document.getElementById("status").textContent =
     "AI ADMIN CORE : INITIALIZING";
 
-  speakOnce(scriptLines);
+  // AI説明開始（1回）
+  speakOnce(baseLines);
 
+  // 軽く暗転
   document.body.style.transition = "filter 1.2s";
   document.body.style.filter = "brightness(0.85)";
 });
@@ -160,6 +181,7 @@ document.body.addEventListener("click", ()=>{
 
 </body>
 </html>
+
 
 
 
