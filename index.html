@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* ===== 基本 ===== */
 html, body{
   margin:0;
   width:100%;
@@ -26,22 +25,20 @@ canvas{
   pointer-events:none;
 }
 
-/* ===== ENTER（必ず表示される） ===== */
+/* ===== ENTER（最初から表示） ===== */
 #enter{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   z-index:10;
-
   font-size:20px;
   letter-spacing:6px;
   color:#cfd8dc;
-
-  opacity:1;              /* ← 必ず見える */
+  opacity:1;
   transition:opacity 1.2s;
   user-select:none;
-  pointer-events:none;    /* 押せない（演出） */
+  pointer-events:none;
 }
 
 /* ===== ステータス ===== */
@@ -60,25 +57,21 @@ canvas{
 
 <body>
 
-<!-- 背景 -->
 <canvas id="matrix"></canvas>
 
-<!-- 初期表示 -->
 <div id="enter">ENTER</div>
 <div id="status">AI ADMIN CORE : STANDBY</div>
 
 <script>
-/* =========================
-   マトリックス雨
-========================= */
+/* ===== マトリックス雨 ===== */
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 }
-window.addEventListener("resize", resize);
+addEventListener("resize", resize);
 resize();
 
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
@@ -104,24 +97,22 @@ function drawMatrix(){
 }
 setInterval(drawMatrix, 50);
 
-/* =========================
-   クールAI 台本（1回だけ）
-========================= */
+/* ===== 正規台本（最初に決めた文章） ===== */
 const scriptLines = [
-  "アクセスを確認。",
-  "プラモガレージ・データノードへ接続。",
-  "管理AI、ADMIN CORE。",
-  "一時アクセスを許可。",
-  "システム初期化中。",
-  "データ整合性、正常。",
-  "外部干渉、未検出。"
+  "アクセスを確認しました。",
+  "ようこそ、プラモガレージ・データノードへ。",
+  "私は、管理AI、ADMIN CORE。",
+  "あなたのアクセスを一時的に許可します。",
+  "現在、システムは初期化フェーズに移行中。",
+  "データ整合性、問題なし。",
+  "外部干渉、検出されていません。"
 ];
 
-let hasSpoken = false;
+let spoken = false;
 
 function speakOnce(lines){
-  if(hasSpoken) return;
-  hasSpoken = true;
+  if(spoken) return;
+  spoken = true;
 
   speechSynthesis.cancel();
   let i = 0;
@@ -130,9 +121,9 @@ function speakOnce(lines){
     if(i >= lines.length) return;
 
     const msg = new SpeechSynthesisUtterance(lines[i]);
-    msg.lang = "ja-JP";
-    msg.rate = 0.80;
-    msg.pitch = 0.95;
+    msg.lang   = "ja-JP";
+    msg.rate   = 0.88;  // 元の自然寄り
+    msg.pitch  = 1.10;  // 女性AI感
     msg.volume = 1.0;
 
     const voices = speechSynthesis.getVoices();
@@ -142,33 +133,26 @@ function speakOnce(lines){
     );
     if(female) msg.voice = female;
 
-    msg.onend = () => setTimeout(next, 600);
+    msg.onend = () => setTimeout(next, 700);
     speechSynthesis.speak(msg);
     i++;
   }
   next();
 }
 
-/* =========================
-   クリック処理（1回のみ）
-========================= */
+/* ===== 1回クリックで実行 ===== */
 let activated = false;
 
 document.body.addEventListener("click", ()=>{
   if(activated) return;
   activated = true;
 
-  // ENTERを消す
   document.getElementById("enter").style.opacity = 0;
-
-  // ステータス更新
   document.getElementById("status").textContent =
     "AI ADMIN CORE : INITIALIZING";
 
-  // AI説明（1回）
   speakOnce(scriptLines);
 
-  // 軽く暗転
   document.body.style.transition = "filter 1.2s";
   document.body.style.filter = "brightness(0.85)";
 });
