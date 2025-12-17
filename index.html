@@ -1,8 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURAMO GATE 01</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: Consolas, monospace;
+}
+
+/* マトリックス雨 */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* ENTER 同化テキスト */
+#enter {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  color: #00ff88;
+  font-size: 22px;
+  letter-spacing: 4px;
+  opacity: 0.85;
+  cursor: pointer;
+  animation: pulse 2s infinite;
+  text-shadow: 0 0 8px #00ff88;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 管理AI表示 */
+#ai {
+  position: fixed;
+  bottom: 24px;
+  width: 100%;
+  text-align: center;
+  color: #00ff88;
+  font-size: 12px;
+  opacity: 0.6;
+  z-index: 2;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="enter" onclick="enterGate()">▶ ENTER ◀</div>
+
+<div id="ai">AI ADMIN CORE : GATE INITIALIZING...</div>
+
 <script>
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-";
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$%#*&";
 const fontSize = 14;
 let columns = 0;
 let drops = [];
@@ -13,12 +83,11 @@ function resize() {
   columns = Math.floor(canvas.width / fontSize);
   drops = Array(columns).fill(1);
 }
-
 window.addEventListener("resize", resize);
 resize();
 
 function drawMatrix() {
-  ctx.fillStyle = "rgba(2,4,4,0.08)";
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = "#00ff88";
@@ -34,11 +103,14 @@ function drawMatrix() {
     drops[i]++;
   }
 }
-
 setInterval(drawMatrix, 50);
 
 function enterGate() {
+  document.getElementById("enter").style.display = "none";
   document.body.style.transition = "opacity 1.2s";
   document.body.style.opacity = 0;
 }
 </script>
+
+</body>
+</html>
