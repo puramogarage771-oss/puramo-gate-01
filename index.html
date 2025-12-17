@@ -14,18 +14,17 @@ html, body {
   background: #020404;
   overflow: hidden;
   font-family: Consolas, "Courier New", monospace;
-  color: #00ffcc;
+  color: #cfd6db;
 }
 
+/* ===== マトリックス雨 ===== */
 canvas {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: 0;
 }
 
+/* ===== ENTER（シルバー同化） ===== */
 #gate {
   position: fixed;
   top: 50%;
@@ -33,30 +32,27 @@ canvas {
   transform: translate(-50%, -50%);
   z-index: 2;
   cursor: pointer;
-  mix-blend-mode: screen;
+  user-select: none;
 }
 
 #gate span {
   font-size: 22px;
   letter-spacing: 6px;
-  color: #00ffcc;
+  color: #dfe6ea;
+  opacity: 0.65;
+  animation: pulse 3s infinite;
   text-shadow:
-    0 0 6px rgba(0,255,204,0.6),
-    0 0 14px rgba(0,255,204,0.4),
-    0 0 28px rgba(0,255,204,0.2);
+    0 0 6px rgba(220,235,245,0.25),
+    0 0 14px rgba(220,235,245,0.18);
 }
 
-.arrow {
-  margin: 0 12px;
-  opacity: 0.6;
-  animation: blink 1.4s infinite;
+@keyframes pulse {
+  0%   { opacity: 0.35; }
+  50%  { opacity: 0.85; }
+  100% { opacity: 0.35; }
 }
 
-@keyframes blink {
-  0%,100% { opacity: 0.2; }
-  50% { opacity: 0.8; }
-}
-
+/* ===== ステータス ===== */
 #status {
   position: fixed;
   bottom: 6%;
@@ -64,12 +60,13 @@ canvas {
   text-align: center;
   font-size: 12px;
   letter-spacing: 2px;
-  opacity: 0.7;
+  opacity: 0.6;
   z-index: 2;
+  color: #bfc7cc;
 }
 
+/* ===== スマホ ===== */
 @media (max-width: 768px) {
-  .arrow { display: none; }
   #gate span {
     font-size: 18px;
     letter-spacing: 4px;
@@ -83,16 +80,15 @@ canvas {
 <canvas id="matrix"></canvas>
 
 <div id="gate" onclick="enterGate()">
-  <span class="arrow">▶</span>
   <span>ENTER</span>
-  <span class="arrow">◀</span>
 </div>
 
 <div id="status">
-  AI ADMIN CORE : GATE INITIALIZING...
+  AI ADMIN CORE : STANDBY MODE
 </div>
 
 <script>
+/* ===== マトリックス雨（先端シルバー） ===== */
 const canvas = document.getElementById("matrix");
 const ctx = canvas.getContext("2d");
 
@@ -109,7 +105,7 @@ let columns = Math.floor(canvas.width / fontSize);
 let drops = Array(columns).fill(1);
 
 function drawMatrix() {
-  ctx.fillStyle = "rgba(2,4,4,0.15)";
+  ctx.fillStyle = "rgba(2,4,4,0.12)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.font = fontSize + "px monospace";
@@ -119,18 +115,20 @@ function drawMatrix() {
     const x = i * fontSize;
     const y = drops[i] * fontSize;
 
-    if (Math.random() > 0.985) {
-      ctx.fillStyle = "#f5f7f8";
-      ctx.shadowColor = "rgba(220,235,255,0.9)";
-      ctx.shadowBlur = 20;
-    } else {
-      ctx.fillStyle = "#6f7a7c";
-      ctx.shadowBlur = 0;
-    }
-
+    // 本体（グリーン）
+    ctx.fillStyle = "rgba(0,255,136,0.45)";
+    ctx.shadowBlur = 0;
     ctx.fillText(char, x, y);
 
-    if (y > canvas.height && Math.random() > 0.97) {
+    // 先端（シルバー発光・ランダム）
+    if (Math.random() > 0.985) {
+      ctx.fillStyle = "#f5f7f8";
+      ctx.shadowColor = "rgba(230,245,255,0.9)";
+      ctx.shadowBlur = 20;
+      ctx.fillText(char, x, y - fontSize);
+    }
+
+    if (y > canvas.height && Math.random() > 0.975) {
       drops[i] = 0;
     }
     drops[i]++;
@@ -139,29 +137,37 @@ function drawMatrix() {
 
 setInterval(drawMatrix, 50);
 
-function enterGate() {
-  document.body.style.transition = "opacity 1.2s";
-  document.body.style.opacity = 0;
-  setTimeout(() => {
-    alert("ACCESS GRANTED");
-  }, 1200);
-}
-</script/* ===== AI 自動音声 ===== */
-const aiVoice = new Audio("ai_intro.mp3");
-aiVoice.volume = 0.15; // 小さめ（重要）
+/* ===== AIアシスタント音声 ===== */
+const aiVoice = new Audio("ai_assistant.mp3");
+aiVoice.volume = 0.18;
 aiVoice.preload = "auto";
 
-function startAIVoice() {
-  aiVoice.play().catch(() => {
-    console.log("Auto play blocked. Waiting for user interaction.");
-  });
-}
-
-// ページ起動後 少し待って再生
+// 自動再生（制限対策あり）
 window.addEventListener("load", () => {
-  setTimeout(startAIVoice, 2200);
+  setTimeout(() => {
+    aiVoice.play().catch(() => {
+      console.log("Auto play blocked. Waiting for user interaction.");
+    });
+  }, 2200);
 });
->
+
+/* ===== ENTER 処理 ===== */
+function enterGate() {
+  aiVoice.volume = 0.45;
+  aiVoice.play();
+
+  document.getElementById("status").innerText =
+    "ACCESS GRANTED : SYNCHRONIZING CORE...";
+
+  document.body.style.transition = "opacity 1.4s";
+  document.body.style.opacity = 0;
+
+  setTimeout(() => {
+    // 次のページを作ったらここを変更
+    // window.location.href = "next.html";
+  }, 1500);
+}
+</script>
 
 </body>
 </html>
