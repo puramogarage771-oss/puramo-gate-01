@@ -2,41 +2,65 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<title>PURAMO AI VOICE TEST</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PURAMO AUDIO TEST</title>
 
 <style>
-body {
+html, body {
   margin: 0;
+  width: 100%;
+  height: 100%;
   background: #000;
-  color: #0ff;
+  color: #ccc;
   font-family: Consolas, monospace;
-  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 #btn {
-  border: 1px solid #0ff;
-  padding: 16px 32px;
+  border: 1px solid #aaa;
+  padding: 14px 30px;
   cursor: pointer;
+  letter-spacing: 3px;
+  transition: 0.3s;
+}
+
+#btn:hover {
+  background: #111;
+  color: #fff;
 }
 </style>
 </head>
 
 <body>
 
-<div id="btn">▶ CLICK TO PLAY VOICE</div>
-
-<audio id="voice" src="system_start.mp3"></audio>
+<div id="btn">▶ ACTIVATE AI</div>
 
 <script>
-document.getElementById("btn").onclick = () => {
-  const audio = document.getElementById("voice");
-  audio.currentTime = 0;
-  audio.play();
-};
+const btn = document.getElementById("btn");
+
+btn.addEventListener("click", () => {
+  const msg = new SpeechSynthesisUtterance();
+
+  msg.text = "アクセスを確認しました。システムを起動します。";
+  msg.lang = "ja-JP";
+  msg.rate = 0.95;
+  msg.pitch = 1.2;   // 少し高め → AI女性風
+  msg.volume = 1.0;
+
+  // 女性音声を自動選択
+  const voices = speechSynthesis.getVoices();
+  const female = voices.find(v =>
+    v.lang === "ja-JP" && (v.name.includes("Female") || v.name.includes("女性"))
+  );
+  if (female) msg.voice = female;
+
+  speechSynthesis.cancel(); // 念のためリセット
+  speechSynthesis.speak(msg);
+});
 </script>
 
 </body>
 </html>
+
